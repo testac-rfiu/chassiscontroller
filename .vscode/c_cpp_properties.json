@@ -1,6 +1,7 @@
 {
     "configurations": [
         {
+<<<<<<< HEAD
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**"
@@ -14,6 +15,20 @@
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "windows-gcc-x64"
+=======
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "/usr/local/include",
+                "/Users/adamgorski/Google Drive/UTEP/Senior Project/chassiscontroller/include"
+            ],
+            "defines": [],
+            "compilerPath": "/Users/adamgorski/anaconda3/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "macos-clang-x64"
+>>>>>>> 239f358eb62d6392fdd2fe49b3d9c40adc8c8b3c
         }
     ],
     "version": 4

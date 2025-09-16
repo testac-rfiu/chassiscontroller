@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RFIU Front Panel (2×4)</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --txt:#e5e7eb; --muted:#9ca3af; --btn:#2563eb; --btnTxt:#fff; --ok:#10b981; --err:#ef4444; }
+    body { margin:0; background:var(--bg); color:var(--txt); font:16px system-ui,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; align-items:flex-start; padding:40px; }
+    .card { background:var(--card); padding:24px; border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.4); max-width:600px; width:100%; }
+    h1 { margin:0 0 8px; font-size:24px; }
+    p.sub { margin:0 0 20px; color:var(--muted); }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin:10px 0 18px; align-items:center; }
+    input,select { background:#0b1220; color:var(--txt); border:1px solid rgba(255,255,255,.2); border-radius:10px; padding:10px 12px; }
+    input.small { width:110px; }
+    button { background:var(--btn); color:var(--btnTxt); border:0; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    .paths { display:flex; gap:12px; flex-wrap:wrap; }
+    .pill { background:#1f2937; border:1px solid rgba(255,255,255,.2); border-radius:12px; padding:12px 16px; cursor:pointer; color:#cbd5e1; }
+    .pill:hover { border-color:#334155; }
+    .status { min-height:22px; margin:8px 0; font-weight:600; }
+    .ok { color:var(--ok); } .err { color:var(--err); }
+    pre { background:#0b1220; border:1px dashed rgba(255,255,255,.2); border-radius:12px; padding:14px; overflow:auto; min-height:140px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>RFIU Front Panel</h1>
+    <p class="sub">Select Switch (1–2) and Path (1–4). Works with the fake FPGA over Ethernet.</p>
+
+    <!-- Target -->
+    <div class="row">
+      <input id="host" value="127.0.0.1" placeholder="IP address">
+      <input id="port" class="small" value="5025" placeholder="Port">
+      <button onclick="setTarget()">Set Target</button>
+      <span id="targetTag">Target: 127.0.0.1:5025</span>
+    </div>
+
+    <!-- Switch selector -->
+    <div class="row">
+      <label for="swSel">Switch</label>
+      <select id="swSel">
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+      <button onclick="readState()">Read State</button>
+    </div>
+
+    <!-- Path buttons -->
+    <div class="paths">
+      <button class="pill" onclick="selectRoute(1)">Path 1</button>
+      <button class="pill" onclick="selectRoute(2)">Path 2</button>
+      <button class="pill" onclick="selectRoute(3)">Path 3</button>
+      <button class="pill" onclick="selectRoute(4)">Path 4</button>
+    </div>
+
+    <div id="msg" class="status"></div>
+    <pre id="stateBox">{}</pre>
+  </div>
+
+  <script>
+    async function api(path, opts={}) {
+      const r = await fetch(path, { ...opts, headers:{'Content-Type':'application/json'} });
+      if (!r.ok) { let e=''; try{e=(await r.json()).error}catch{} throw new Error(e||r.statusText); }
+      return r.json();
+    }
+    function setMsg(txt, ok=true){ const el=document.getElementById('msg'); el.textContent=txt; el.className='status '+(ok?'ok':'err'); }
+
+    async function setTarget(){
+      const host=document.getElementById('host').value.trim();
+      const port=Number(document.getElementById('port').value.trim());
+      try{
+        const r=await api('/api/target',{method:'POST',body:JSON.stringify({host,port})});
+        document.getElementById('targetTag').textContent=`Target: ${r.host}:${r.port}`;
+        setMsg('Target set',true);
+      }catch(e){ setMsg('Failed: '+e.message,false); }
+    }
+
+    async function readState(){
+      try{
+        const r=await api('/api/state');
+        document.getElementById('stateBox').textContent=JSON.stringify(r.state||r,null,2);
+        const st=r.state||{};
+        setMsg(`Switch ${st.switch}, Path ${st.path}`,true);
+      }catch(e){ setMsg('Error: '+e.message,false); }
+    }
+
+    async function selectRoute(p){
+      const sw=document.getElementById('swSel').value;
+      try{
+        const r=await api(`/api/route/${sw}/${p}`,{method:'POST'});
+        document.getElementById('stateBox').textContent=JSON.stringify(r.state||r,null,2);
+        setMsg(`OK: Switch ${sw} Path ${p}`,true);
+      }catch(e){ setMsg('Error: '+e.message,false); }
+    }
+  </script>
+</body>
+</html>

@@ -2,9 +2,13 @@ On mysys2 ucrt64 terminal
 
 
 $ cd /c/Users/fuent/Downloads/senior/backend2
+
 $ g++ main.cpp Logger.cpp SCPI_Driver.cpp -o main.exe -lws2_32
+
 $ ./main.exe
+
 (server listening)
+
 (receive call)
 
 

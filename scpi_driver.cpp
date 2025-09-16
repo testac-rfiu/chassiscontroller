@@ -1,20 +1,64 @@
-#include <cstdint>
+#include "scpi_driver.hpp"
 #include <iostream>
+#include <cstring>
+#ifdef _WIN32
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
 
-// Mock variables to simulate hardware registers
-uint8_t mock_switch_reg = 0;
-uint32_t mock_odometer_reg = 42; // Example simulated value
-
-// Function to "write" to AXI register (simulation)
-int write_to_axi(uint32_t addr, uint8_t value) {
-    // Simulate register write
-    std::cout << "[SIM] AXI write: Address = 0x" << std::hex << addr << ", Value = " << std::dec << static_cast<int>(value) << std::endl;
-    mock_switch_reg = value; // Store value in mock variable
-    return 0; // Success
+SCPIDriver::SCPIDriver() : sockfd(-1), connected(false) {
+#ifdef _WIN32
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,2), &wsa);
+#endif
 }
 
-// Function to "read" odometer register (simulation)
-uint32_t read_odometer(uint32_t addr) {
-    std::cout << "[SIM] AXI read: Address = 0x" << std::hex << addr << " -> Value = " << std::dec << mock_odometer_reg << std::endl;
-    return mock_odometer_reg;
+SCPIDriver::~SCPIDriver() {
+    if (connected) {
+#ifdef _WIN32
+        closesocket(sockfd);
+        WSACleanup();
+#else
+        close(sockfd);
+#endif
+    }
+}
+
+bool SCPIDriver::connect(const std::string& host, int port) {
+#ifdef _WIN32
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+#else
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+#endif
+    if (sockfd < 0) return false;
+
+    sockaddr_in server{};
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    server.sin_addr.s_addr = inet_addr(host.c_str());
+
+    if (::connect(sockfd, (sockaddr*)&server, sizeof(server)) < 0) {
+        return false;
+    }
+
+    connected = true;
+    return true;
+}
+
+std::string SCPIDriver::sendCommand(const std::string& cmd) {
+    if (!connected) return "Not connected";
+
+    send(sockfd, cmd.c_str(), cmd.size(), 0);
+
+    char buffer[1024] = {0};
+    int n = recv(sockfd, buffer, sizeof(buffer)-1, 0);
+    if (n > 0) {
+        buffer[n] = '\0';
+        return std::string(buffer);
+    }
+    return "";
 }

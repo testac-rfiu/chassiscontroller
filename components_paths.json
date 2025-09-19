@@ -1,0 +1,104 @@
+{
+    "components": [
+      {
+        "id": "SW1",
+        "name": "Switch 1",
+        "model": "8706C",
+        "manufacturer": "Keysight",
+        "connectorType": "SMA",
+        "address": 268436224
+      },
+      {
+        "id": "SW2",
+        "name": "Switch 2",
+        "model": "87104C",
+        "manufacturer": "Keysight",
+        "connectorType": "SMA",
+        "address": 268436480
+      }
+    ],
+    "paths": [
+        {
+          "id": 1,
+          "componentId": "SW1",
+          "gpioValue": 1
+        },
+        {
+          "id": 1,
+          "componentId": "SW2",
+          "gpioValue": 4
+        },
+        {
+          "id": 2,
+          "componentId": "SW1",
+          "gpioValue": 2
+        },
+        {
+          "id": 2,
+          "componentId": "SW2",
+          "gpioValue": 4
+        },
+        {
+          "id": 3,
+          "componentId": "SW1",
+          "gpioValue": 3
+        },
+        {
+          "id": 3,
+          "componentId": "SW2",
+          "gpioValue": 4
+        },
+        {
+          "id": 4,
+          "componentId": "SW1",
+          "gpioValue": 4
+        },
+        {
+          "id": 4,
+          "componentId": "SW2",
+          "gpioValue": 4
+        },
+                {
+          "id": 5,
+          "componentId": "SW1",
+          "gpioValue": 1
+        },
+        {
+          "id": 5,
+          "componentId": "SW2",
+          "gpioValue": 1
+        },
+        {
+          "id": 6,
+          "componentId": "SW1",
+          "gpioValue": 2
+        },
+        {
+          "id": 6,
+          "componentId": "SW2",
+          "gpioValue": 1
+        },
+        {
+          "id": 7,
+          "componentId": "SW1",
+          "gpioValue": 3
+        },
+        {
+          "id": 7,
+          "componentId": "SW2",
+          "gpioValue": 1
+        },
+        {
+          "id": 8,
+          "componentId": "SW1",
+          "gpioValue": 4
+        },
+        {
+          "id": 8,
+          "componentId": "SW2",
+          "gpioValue": 1
+        }
+      ]
+    }
+    
+  

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soft Front Panel - Switch Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .switch-diagram {
+            width: 200px;
+            height: 150px;
+            border: 2px solid #333;
+            margin: 20px auto;
+            position: relative;
+            background-color: white;
+        }
+        
+        .port {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            background-color: white;
+            position: absolute;
+        }
+        
+        .port.left {
+            left: 20px;
+            top: 65px;
+        }
+        
+        .port.top {
+            right: 30px;
+            top: 20px;
+        }
+        
+        .port.right1 {
+            right: 30px;
+            top: 50px;
+        }
+        
+        .port.right2 {
+            right: 30px;
+            top: 80px;
+        }
+        
+        .port.bottom {
+            right: 30px;
+            bottom: 20px;
+        }
+        
+        .mode-selector {
+            margin: 20px 0;
+        }
+        
+        .mode-selector label {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .mode-selector input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        .control-section {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .control-section.active {
+            display: block;
+        }
+        
+        select, input[type="number"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007cba;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #005a87;
+        }
+        
+        .switch-controls {
+            margin: 10px 0;
+        }
+        
+        .switch-row {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .switch-row label {
+            min-width: 100px;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        #response {
+            color: green;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        #error {
+            color: red;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        /* Context Menu Styles */
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            min-width: 200px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .context-menu h4 {
+            margin: 0 0 10px 0;
+            color: #007cba;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .context-menu p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .context-menu .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .switch-option {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>Soft Front Panel - Switch Control</h1>
+    <p>Right-click the switch icon for component details:</p>
+    
+    <div class="switch-diagram" oncontextmenu="showSwitchContextMenu(event)">
+        <div class="port left"></div>
+        <div class="port top"></div>
+        <div class="port right1"></div>
+        <div class="port right2"></div>
+        <div class="port bottom"></div>
+    </div>
+    
+    <div class="mode-selector">
+        <label>
+            <input type="radio" name="mode" value="path" checked onchange="setMode('path')">
+            Path Mode
+        </label>
+        <label>
+            <input type="radio" name="mode" value="switch" onchange="setMode('switch')">
+            Switch Mode
+        </label>
+    </div>
+    
+    <!-- Path Mode Controls -->
+    <div class="control-section active" id="path-section" style="display: block;">
+        <label for="path-select">Select Path:</label>
+        <select id="path-select">
+            <option value="1">Path 1</option>
+            <option value="2">Path 2</option>
+            <option value="3">Path 3</option>
+            <option value="4">Path 4</option>
+            <option value="5">Path 5</option>
+            <option value="6">Path 6</option>
+            <option value="7">Path 7</option>
+            <option value="8">Path 8</option>
+        </select>
+        <button onclick="sendPath()">Apply Path</button>
+    </div>
+    
+    <!-- Switch Mode Controls -->
+    <div class="control-section" id="switch-section">
+        <div class="switch-controls">
+            <div class="switch-row">
+                <label for="switch-select">Switch:</label>
+                <div class="switch-option">
+                    <select id="switch-select">
+                        <!-- Options will be populated dynamically from server config -->
+                    </select>
+                </div>
+            </div>
+            <div class="switch-row">
+                <label for="gpio-value">GPIO Value:</label>
+                <input type="number" id="gpio-value" min="0" max="255" value="" placeholder="0-255">
+            </div>
+            <div class="switch-row">
+                <button onclick="sendSwitch()">Apply Switch</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <h4 id="context-title">Component Details</h4>
+        <div id="context-content">
+            <!-- Component details will be populated here -->
+        </div>
+    </div>
+    
+    <p id="response"></p>
+    <p id="error"></p>
+
+    <script>
+        let componentsData = []; // Store component data for context menu
+        
+        function setMode(mode) {
+            const pathSection = document.getElementById('path-section');
+            const switchSection = document.getElementById('switch-section');
+            
+            if (mode === 'path') {
+                pathSection.classList.add('active');
+                switchSection.classList.remove('active');
+                pathSection.style.display = 'block';
+                switchSection.style.display = 'none';
+            } else if (mode === 'switch') {
+                switchSection.classList.add('active');
+                pathSection.classList.remove('active');
+                switchSection.style.display = 'block';
+                pathSection.style.display = 'none';
+            }
+        }
+
+        function sendPath() {
+            const pathSelect = document.getElementById('path-select');
+            const pathNum = pathSelect.value;
+            const scpiCmd = `PATH:SELECT ${pathNum}`;
+
+            fetch('http://localhost:8080/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ scpi_command: scpiCmd })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = `Status: ${data.status}, Message: ${data.message}`;
+                document.getElementById('error').innerText = '';
+            })
+            .catch(error => {
+                document.getElementById('error').innerText = `Error: ${error.message}`;
+                document.getElementById('response').innerText = '';
+            });
+        }
+        
+        function sendSwitch() {
+            const switchSelect = document.getElementById('switch-select');
+            const gpioInput = document.getElementById('gpio-value');
+            const switchId = switchSelect.value;
+            const gpioValue = gpioInput.value;
+            
+            if (!gpioValue || gpioValue < 0 || gpioValue > 255) {
+                document.getElementById('error').innerText = 'Invalid GPIO value. Must be between 0 and 255.';
+                document.getElementById('response').innerText = '';
+                return;
+            }
+            
+            const scpiCmd = `SWITCH:SELECT ${switchId} ${gpioValue}`;
+
+            fetch('http://localhost:8080/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ scpi_command: scpiCmd })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = `Status: ${data.status}, Message: ${data.message}`;
+                document.getElementById('error').innerText = '';
+            })
+            .catch(error => {
+                document.getElementById('error').innerText = `Error: ${error.message}`;
+                document.getElementById('response').innerText = '';
+            });
+        }
+
+        // Context Menu Functions - Sends SCPI command to get SW2 info
+        function showSwitchContextMenu(event) {
+            console.log("RIGHT-CLICK DETECTED - Function called!");
+            event.preventDefault();
+            
+            // Send SCPI command to get SW2 information
+            const scpiCmd = "SWITCH:INFO? 2";
+            console.log("Sending SCPI command:", scpiCmd);
+            
+            fetch('http://localhost:8080/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ scpi_command: scpiCmd })
+            })
+            .then(response => {
+                console.log("Received response:", response);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Response data:", data);
+                
+                const contextMenu = document.getElementById('context-menu');
+                const contextContent = document.getElementById('context-content');
+                
+                if (data.status === 'OK' && data.component_info) {
+                    // Display the component information returned from server
+                    const component = data.component_info;
+                    contextContent.innerHTML = `
+                        <div style="margin-bottom: 10px;">
+                            <p><span class="label">ID:</span> ${component.id}</p>
+                            <p><span class="label">Name:</span> ${component.name}</p>
+                            <p><span class="label">Model:</span> ${component.model}</p>
+                            <p><span class="label">Manufacturer:</span> ${component.manufacturer}</p>
+                            <p><span class="label">Connector Type:</span> ${component.connectorType}</p>
+                            <p><span class="label">Address:</span> ${component.address}</p>
+                        </div>
+                    `;
+                } else {
+                    contextContent.innerHTML = '<p>SW2 component information not available</p>';
+                }
+                
+                // Position and show context menu
+                contextMenu.style.left = event.pageX + 'px';
+                contextMenu.style.top = event.pageY + 'px';
+                contextMenu.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                
+                const contextMenu = document.getElementById('context-menu');
+                const contextContent = document.getElementById('context-content');
+                
+                contextContent.innerHTML = '<p>Error retrieving component information</p>';
+                contextMenu.style.left = event.pageX + 'px';
+                contextMenu.style.top = event.pageY + 'px';
+                contextMenu.style.display = 'block';
+            });
+        }
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', function(event) {
+            const contextMenu = document.getElementById('context-menu');
+            if (!contextMenu.contains(event.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        // Load configuration and populate dropdowns
+        fetch('http://localhost:8080/config')
+            .then(response => response.json())
+            .then(config => {
+                console.log('Loaded config:', config);
+                
+                // Populate path options
+                if (config.paths) {
+                    const pathSelect = document.getElementById('path-select');
+                    pathSelect.innerHTML = '';
+                    
+                    // Get unique path IDs
+                    const pathIds = [...new Set(config.paths.map(p => p.id))];
+                    pathIds.sort((a, b) => a - b);
+                    
+                    pathIds.forEach(id => {
+                        const option = document.createElement('option');
+                        option.value = id;
+                        option.textContent = `Path ${id}`;
+                        pathSelect.appendChild(option);
+                    });
+                }
+                
+                // Populate switch options dynamically
+                populateSwitchOptions(config);
+            })
+            .catch(error => {
+                console.log('Could not load config from server, using defaults');
+                populateDefaultSwitches();
+            });
+        
+        function populateSwitchOptions(config) {
+            const switchSelect = document.getElementById('switch-select');
+            switchSelect.innerHTML = '';
+            
+            // Store components data for context menu
+            if (config.components && Array.isArray(config.components)) {
+                componentsData = config.components;
+                
+                // Populate switch dropdown with components
+                config.components.forEach(component => {
+                    const option = document.createElement('option');
+                    option.value = component.id;
+                    
+                    let displayText = component.name || component.id;
+                    if (component.model) {
+                        displayText += ` (${component.model})`;
+                    }
+                    
+                    option.textContent = displayText;
+                    switchSelect.appendChild(option);
+                });
+                
+                console.log('Populated switches from components:', componentsData);
+                return;
+            }
+            
+            // Fallback: extract from paths array
+            if (config.paths && Array.isArray(config.paths)) {
+                const switchMap = new Map();
+                
+                config.paths.forEach(path => {
+                    let switchId = '';
+                    
+                    // Handle both naming conventions
+                    if (path.component_id) {
+                        switchId = path.component_id;
+                    } else if (path.componentId) {
+                        switchId = path.componentId;
+                    }
+                    
+                    if (switchId && !switchMap.has(switchId)) {
+                        // Convert switch1 -> SW1, switch2 -> SW2, etc.
+                        let displayId = switchId;
+                        if (switchId.startsWith('switch')) {
+                            const num = switchId.replace('switch', '');
+                            displayId = `SW${num}`;
+                        }
+                        
+                        switchMap.set(switchId, {
+                            id: displayId,
+                            originalId: switchId,
+                            name: `Switch ${displayId}`
+                        });
+                    }
+                });
+                
+                // Convert Map values to Array and sort
+                const switchArray = Array.from(switchMap.values());
+                switchArray.sort((a, b) => a.id.localeCompare(b.id));
+                
+                // Populate the select element
+                switchArray.forEach(switchInfo => {
+                    const option = document.createElement('option');
+                    option.value = switchInfo.id;
+                    option.textContent = switchInfo.name;
+                    switchSelect.appendChild(option);
+                });
+                
+                console.log('Populated switches from paths:', switchArray);
+                return;
+            }
+            
+            // If no switches found, add defaults
+            populateDefaultSwitches();
+        }
+        
+        function populateDefaultSwitches() {
+            const switchSelect = document.getElementById('switch-select');
+            switchSelect.innerHTML = '';
+            
+            // Default fallback switches
+            const defaultSwitches = [
+                { value: 'SW1', text: 'Switch 1 (SW1)' },
+                { value: 'SW2', text: 'Switch 2 (SW2)' }
+            ];
+            
+            defaultSwitches.forEach(sw => {
+                const option = document.createElement('option');
+                option.value = sw.value;
+                option.textContent = sw.text;
+                switchSelect.appendChild(option);
+            });
+            
+            console.log('Using default switches');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+        "paths": [
+            {"id": 1, "component_id": "switch1", "address": 268436224, "gpio_value": 1},
+            {"id": 2, "component_id": "switch1", "address": 268436225, "gpio_value": 2},
+            {"id": 3, "component_id": "switch1", "address": 268436226, "gpio_value": 3},
+            {"id": 1, "component_id": "switch2", "address": 268436480, "gpio_value": 1},
+            {"id": 2, "component_id": "switch2", "address": 268436481, "gpio_value": 2},
+            {"id": 3, "component_id": "switch2", "address": 268436480, "gpio_value": 3},
+            {"id": 4, "component_id": "switch2", "address": 268436480, "gpio_value": 4}
+        ]
+    }

@@ -15,8 +15,9 @@ $ ./main.exe
 
 On CMD prompt
 
+ // calls path 3
 
-curl -X POST http://localhost:8080/scpi -d ":ROUTE:PATH 3" // calls path 3
+curl -X POST http://localhost:8080/scpi -d ":ROUTE:PATH 3"
 
 Output:
 
@@ -24,7 +25,9 @@ Output:
 
 Test another path
 
- curl -X POST http://localhost:8080/scpi -d ":ROUTE:PATH 4" //path 4
+ //path 4
+
+ curl -X POST http://localhost:8080/scpi -d ":ROUTE:PATH 4"
 
 If invalid output: 
 
@@ -34,10 +37,3 @@ Output:
 
 {"error":"Path ID not found"}
 
-Paste into cmd 
-
-curl -X POST http://localhost:8080/scpi -d ":ROUTE:PATH 2"
-
-output
-
-{"address":268436224,"component_id":"switch1","gpio_value":2,"id":2}
